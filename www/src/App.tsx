@@ -9,6 +9,9 @@ export function App() {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
+    (window as any).onMessageReceived = (message: string) => {
+      console.log(message);
+    }
     async function initwasm() {
       await init();
       setIsLoaded(true);

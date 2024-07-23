@@ -36,7 +36,16 @@ impl WebSocketClient {
 
 		let onmessage_callback = Closure::wrap(Box::new(move |e: MessageEvent| {
 			if let Some(text) = e.data().as_string() {
-				unpack_message(text);
+				match serde_json::from_str::<server::ServerMessage>(&text) {
+					Ok(server::ServerMessage::NewMessage(data)) => {
+						// decrypt the message
+						// store the message
+						// display the message
+					}
+					Err(_) => {
+						println!("Onmessage error");
+					}
+				}
 			}
 		}) as Box<dyn FnMut(MessageEvent)>);
 
@@ -49,10 +58,21 @@ impl WebSocketClient {
 	}
 
 	#[wasm_bindgen(js_name = sendMessage)]
-	pub fn send_message(&self, sender_id: String, receiver_id: String, message: String) -> Result<(), JsValue> {
-		let message_package = package_message( sender_id, receiver_id, message).unwrap();
+	pub fn send_message(&self, user_id: String, message: String) -> Result<(), JsValue> {
+		let message_string = server::ClientMessage::sent_message_string(user_id, message).unwrap();
 
-		self.ws.send_with_str(&message_package)
+		let result = self.ws.send_with_str(&message_string);
+
+		result
+	}
+
+	#[wasm_bindgen(js_name = sendLogin)]
+	pub fn send_login(&self, access_key: String, password: String) -> Result<(), JsValue> {
+		let message_string = server::ClientMessage::login_data_string(access_key, password).unwrap();
+
+		let result = self.ws.send_with_str(&message_string);
+
+		result
 	}
 }
 
@@ -129,25 +149,4 @@ pub fn get_context_own_data() -> Result<JsValue, JsValue> {
 	};
 
 	Ok(serde_wasm_bindgen::to_value(&data)?)
-}
-
-pub fn package_message( sender_id: String, receiver_id: String, message: String) -> Result<String, JsValue> {
-	// replace with own user id
-
-	let message_package = server::MessagePackage {
-		sender_id,
-		receiver_id,
-		message,
-	};
-
-	let package_data = serde_json::to_string(&message_package).unwrap();
-
-	Ok(package_data)
-}
-
-pub fn unpack_message(message: String) {
-	// decrypt the message
-	// check if it's valid, store it and display it
-
-	on_message_received(message);
 }
