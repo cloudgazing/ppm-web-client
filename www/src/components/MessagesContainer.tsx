@@ -3,7 +3,7 @@ import { IconUser } from "@tabler/icons-react";
 import { ComponentPropsWithoutRef, forwardRef } from "react";
 
 import { cn } from "~/lib/utils.ts";
-import { useAppStateContext } from "~/context/appState.tsx";
+import { useAppStateContext } from "~/context/appState.loader.ts";
 
 interface MessageContainerProps extends ComponentPropsWithoutRef<'div'> { }
 

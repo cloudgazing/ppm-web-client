@@ -1,7 +1,7 @@
 import { IconButton } from "@material-tailwind/react";
 import InitialsAvatar from 'react-initials-avatar';
 
-import { useAppStateContext } from "~/context/appState.tsx";
+import { useAppStateContext } from "~/context/appState.loader.ts";
 
 export function UserIcon() {
 	const { user: { user: { displayName } } } = useAppStateContext();

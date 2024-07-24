@@ -6,8 +6,9 @@ import { PersonStatus } from "~/components/PersonStatus.tsx";
 import { Sidebar } from "~/components/Sidebar.tsx";
 import { UserIcon } from "~/components/UserIcon.tsx";
 
-import { AppStateContextProvider, useAppStateContext } from "~/context/appState.tsx";
-import { WSContextProvider } from "~/context/webSocket.tsx";
+import { AppStateContextProvider } from "~/context/appState.provider.tsx";
+import { WSContextProvider } from "~/context/webSocket.provider.tsx";
+import { useAppStateContext } from "~/context/appState.loader.ts";
 
 function MainHeader() {
 	return <div className="flex justify-between items-center">
@@ -41,8 +42,8 @@ function MainInterface() {
 
 export function Chat() {
 	return <AppStateContextProvider>
-			<WSContextProvider>
+		<WSContextProvider>
 			<MainInterface />
-			</WSContextProvider>
+		</WSContextProvider>
 	</AppStateContextProvider>
 }

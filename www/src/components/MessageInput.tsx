@@ -3,8 +3,8 @@ import { IconPaperclip, IconSend } from "@tabler/icons-react";
 import { useState } from "react";
 import { v4 as uuidv4 } from 'uuid';
 
-import { useAppStateContext } from "~/context/appState.tsx";
-import { useWSClientContext } from "~/context/webSocket.tsx";
+import { useAppStateContext } from "~/context/appState.loader.ts";
+import { useWSClientContext } from "~/context/webSocket.loader.ts";
 
 export function MessageInput() {
   const { user: { user: { userId } }, messages: { messages, setMessages } } = useAppStateContext();

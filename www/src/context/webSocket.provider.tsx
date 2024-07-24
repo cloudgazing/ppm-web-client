@@ -1,14 +1,8 @@
 import type { ReactNode } from 'react';
 
-import { createCustomContext } from '~/context/custom.ts';
-
 import { WebSocketClient } from "ppm-wasm";
 
-type WebSocket = {
-	WSClient: WebSocketClient;
-};
-
-const [useWSClientContext, ContextProvider] = createCustomContext<WebSocket>();
+import { ContextProvider } from '~/context/webSocket.loader.ts';
 
 function WSContextProvider({ children }: { children: ReactNode }) {
 	const WSClient = new WebSocketClient();
@@ -16,4 +10,4 @@ function WSContextProvider({ children }: { children: ReactNode }) {
 	return <ContextProvider value={{ WSClient }}>{children}</ContextProvider>;
 }
 
-export { WSContextProvider, useWSClientContext };
+export { WSContextProvider };

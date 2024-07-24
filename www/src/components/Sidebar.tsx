@@ -1,7 +1,7 @@
 import { Button, IconButton, Tooltip, Typography } from "@material-tailwind/react"
 import { IconCircleFilled, IconLayoutSidebar, IconMessagePlus, IconSettings } from "@tabler/icons-react"
 
-import { useAppStateContext } from "~/context/appState.tsx";
+import { useAppStateContext } from "~/context/appState.loader.ts";
 
 function ConvButton({ contactId, name, newMesageCount }: { contactId: string, name: string, newMesageCount: number }) {
   const { user: { user, setUser } } = useAppStateContext();

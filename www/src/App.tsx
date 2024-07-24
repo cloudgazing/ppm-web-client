@@ -1,15 +1,19 @@
-import { Chat } from "~/pages/Chat.tsx";
-
-import init from 'ppm-wasm';
 import { useEffect, useState } from "react";
 
-init().then();
+import { Chat } from "~/pages/Chat.tsx";
+import init from 'ppm-wasm';
+
+declare global {
+  interface Window {
+    onMessageReceived: (message: string) => void;
+  }
+}
 
 export function App() {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    (window as any).onMessageReceived = (message: string) => {
+    window.onMessageReceived = (message: string) => {
       console.log(message);
     }
     async function initwasm() {
