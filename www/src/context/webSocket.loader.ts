@@ -1,10 +1,10 @@
-import type { WebSocketClient } from "ppm-wasm";
+import type { WebSocketClient } from 'ppm-wasm';
 
 import { createCustomContext } from '~/context/custom.ts';
 
-type WebSocket = {
+interface WebSocket {
 	WSClient: WebSocketClient;
-};
+}
 
 const [useWSClientContext, ContextProvider] = createCustomContext<WebSocket>();
 

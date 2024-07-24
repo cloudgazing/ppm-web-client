@@ -1,22 +1,22 @@
 {
-  "compilerOptions": {
-    //"composite": true,
-    "target": "ESNext",
-    "lib": ["ESNext", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
-    "skipLibCheck": true,
-    "useDefineForClassFields": true,
+	"compilerOptions": {
+		//"composite": true,
+		"target": "ESNext",
+		"lib": ["ESNext", "DOM", "DOM.Iterable"],
+		"module": "ESNext",
+		"skipLibCheck": true,
+		"useDefineForClassFields": true,
 
-    /* Bundler mode */
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "moduleDetection": "force",
-    "noEmit": true,
-    "jsx": "react-jsx",
+		/* Bundler mode */
+		"moduleResolution": "bundler",
+		"allowImportingTsExtensions": true,
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"moduleDetection": "force",
+		"noEmit": true,
+		"jsx": "react-jsx",
 
-    /* Linting */
+		/* Linting */
 		"strict": true,
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
@@ -26,12 +26,12 @@
 		"allowUnreachableCode": false,
 		"exactOptionalPropertyTypes": true,
 		"noImplicitOverride": true,
-    "noImplicitReturns": true,
-    "noUncheckedIndexedAccess": true,
+		"noImplicitReturns": true,
+		"noUncheckedIndexedAccess": true,
 
-    "paths": {
-      "~/*": ["./src/*"]
-    }
-  },
-  "include": ["src", "vite.config.ts", "tailwind.config.ts"]
+		"paths": {
+			"~/*": ["./src/*"]
+		}
+	},
+	"include": ["src", "vite.config.ts", "tailwind.config.ts", "eslint.config.js"]
 }

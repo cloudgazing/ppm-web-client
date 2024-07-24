@@ -8,4 +8,10 @@
 	"lldb.showDisassembly": "auto",
 	"lldb.dereferencePointers": true,
 	"lldb.consoleMode": "commands",
+	"typescript.tsdk": "./www/node_modules/typescript/lib",
+	"prettier.prettierPath": "./www/node_modules/prettier",
+	"[javascript][typescript][typescriptreact][html]": {
+		"editor.formatOnSave": true,
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	}
 }

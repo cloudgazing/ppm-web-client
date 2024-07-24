@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { WebSocketClient } from "ppm-wasm";
+import { WebSocketClient } from 'ppm-wasm';
 
 import { ContextProvider } from '~/context/webSocket.loader.ts';
 
