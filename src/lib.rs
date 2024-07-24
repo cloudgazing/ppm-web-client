@@ -79,12 +79,12 @@ impl WebSocketClient {
 // setting the initial context
 #[wasm_bindgen(js_name = getContextSidebar)]
 pub fn get_context_sidebar() -> Result<JsValue, JsValue> {
+	use storage::SidebarButton;
+
 	// gets data from local storage and decrypts it
 	// reads it into a vector of conversations
 
-	use storage::{SidebarButton, SidebarContext};
-
-	let buttons: SidebarContext = vec![
+	let buttons = vec![
 		SidebarButton {
 			user_id: "user1".to_string(),
 			display_name: "User 1".to_string(),
@@ -106,7 +106,7 @@ pub fn get_context_sidebar() -> Result<JsValue, JsValue> {
 }
 
 #[wasm_bindgen(js_name = getContextConversation)]
-pub fn get_context_conversation() -> Result<JsValue, JsValue> {
+pub fn get_context_conversation() -> Result<js_sys::Array, JsValue> {
 	// gets data from local storage and decrypts it
 	// reads the current user into a currentuser struct
 	// reads the messages into a vec
@@ -135,7 +135,10 @@ pub fn get_context_conversation() -> Result<JsValue, JsValue> {
 		messages,
 	};
 
-	Ok(serde_wasm_bindgen::to_value(&conversation)?)
+	let js_user = serde_wasm_bindgen::to_value(&conversation.user)?;
+	let js_messages = serde_wasm_bindgen::to_value(&conversation.messages)?;
+
+	Ok(js_sys::Array::of2(&js_user, &js_messages))
 }
 
 #[wasm_bindgen(js_name = getContextOwnData)]

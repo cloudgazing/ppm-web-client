@@ -1,10 +1,10 @@
 import { IconButton } from "@material-tailwind/react";
 import InitialsAvatar from 'react-initials-avatar';
 
-import { useUserDataContext } from "~/context/userData.tsx";
+import { useAppStateContext } from "~/context/appState.tsx";
 
 export function UserIcon() {
-	const { name: { displayName } } = useUserDataContext();
+	const { user: { user: { displayName } } } = useAppStateContext();
 
 	return <IconButton color="light-blue" variant="gradient" className="rounded-full">
 		<InitialsAvatar name={displayName} />

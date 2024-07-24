@@ -1,21 +1,17 @@
 import { Button, IconButton, Tooltip, Typography } from "@material-tailwind/react"
 import { IconCircleFilled, IconLayoutSidebar, IconMessagePlus, IconSettings } from "@tabler/icons-react"
 
-import { useUserDataContext } from "~/context/userData.tsx";
-import { useCurrentConversationContext } from "~/context/current.tsx";
+import { useAppStateContext } from "~/context/appState.tsx";
 
 function ConvButton({ contactId, name, newMesageCount }: { contactId: string, name: string, newMesageCount: number }) {
-  const { contacts: { contacts } } = useUserDataContext();
-  const { id: { id, setId }, displayName: { setDisplayName }, messages: { setMessages } } = useCurrentConversationContext();
+  const { user: { user, setUser } } = useAppStateContext();
 
   function changeConv() {
-    setId(contactId)
-    setDisplayName(name)
-    setMessages(contacts[contactId] ? contacts[contactId].messages : [])
+    setUser({ userId: contactId, displayName: name, newMessages: 0, status: 'online' })
   }
 
   return <div>
-    <Button {...(id !== contactId ? { color: 'white', variant: 'text' } : {})} className="flex items-center justify-between" fullWidth onClick={changeConv}>
+    <Button {...(user.userId !== contactId ? { color: 'white', variant: 'text' } : {})} className="flex items-center justify-between" fullWidth onClick={changeConv}>
       {name}
       {newMesageCount && <Tooltip content={`${newMesageCount} new messages`} className="bg-gray-800" ><IconCircleFilled color="white" size={10} /></Tooltip>}
     </Button>
@@ -23,7 +19,7 @@ function ConvButton({ contactId, name, newMesageCount }: { contactId: string, na
 }
 
 export function Sidebar() {
-  const { contacts: { contacts } } = useUserDataContext();
+  const { sidebar: { sidebarButtons } } = useAppStateContext();
 
   return (
     <div className="bg-side-bar w-60 p-3 flex flex-col justify-between gap-3">
@@ -38,8 +34,8 @@ export function Sidebar() {
         </div>
         <div className="flex flex-col gap-3">
           <Typography variant="h6" color="white">Conversations</Typography>
-          {Object.entries(contacts).map(({ 1: conv }) =>
-            <ConvButton key={conv.contactId} contactId={conv.contactId} name={conv.displayName} newMesageCount={conv.newMessageCount} />
+          {sidebarButtons.map(button =>
+            <ConvButton key={button.userId} contactId={button.userId} name={button.displayName} newMesageCount={button.newMessages} />
           )}
         </div>
       </div>

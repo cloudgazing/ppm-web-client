@@ -3,6 +3,7 @@ use std::collections::HashMap;
 
 // stored data
 #[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct OwnMessage {
 	pub message_id: String,
 	pub text: String,
@@ -10,12 +11,14 @@ pub struct OwnMessage {
 }
 
 #[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UserMessage {
 	pub message_id: String,
 	pub text: String,
 }
 
 #[derive(Serialize, Deserialize)]
+#[serde(tag = "type")]
 pub enum Message {
 	OwnMessage(OwnMessage),
 	UserMessage(UserMessage),
@@ -28,10 +31,9 @@ pub struct StorageMetadata {
 	pub last_user_key: UserContext,
 }
 
-// context data
-pub type SidebarContext = Vec<SidebarButton>;
-
+// current / last state
 #[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct SidebarButton {
 	pub user_id: String,
 	pub display_name: String,
@@ -39,6 +41,7 @@ pub struct SidebarButton {
 }
 
 #[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UserContext {
 	pub user_id: String,
 	pub display_name: String,

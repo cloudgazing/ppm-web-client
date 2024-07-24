@@ -5,8 +5,8 @@ import { MessagesContainer } from "~/components/MessagesContainer.tsx";
 import { PersonStatus } from "~/components/PersonStatus.tsx";
 import { Sidebar } from "~/components/Sidebar.tsx";
 import { UserIcon } from "~/components/UserIcon.tsx";
-import { UserDataContextProvider } from "~/context/userData.tsx";
-import { CurrentConversationContextProvider, useCurrentConversationContext } from "~/context/current.tsx";
+
+import { AppStateContextProvider, useAppStateContext } from "~/context/appState.tsx";
 import { WSContextProvider } from "~/context/webSocket.tsx";
 
 function MainHeader() {
@@ -17,7 +17,7 @@ function MainHeader() {
 }
 
 function MainInterface() {
-	const { messages: { messages } } = useCurrentConversationContext();
+	const { messages: { messages } } = useAppStateContext();
 
 	const containerRef = useRef<HTMLDivElement>(null);
 
@@ -40,11 +40,9 @@ function MainInterface() {
 }
 
 export function Chat() {
-	return <CurrentConversationContextProvider>
-		<UserDataContextProvider>
+	return <AppStateContextProvider>
 			<WSContextProvider>
 			<MainInterface />
 			</WSContextProvider>
-		</UserDataContextProvider>
-	</CurrentConversationContextProvider>
+	</AppStateContextProvider>
 }

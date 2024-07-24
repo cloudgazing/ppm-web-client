@@ -3,27 +3,21 @@ import { IconPaperclip, IconSend } from "@tabler/icons-react";
 import { useState } from "react";
 import { v4 as uuidv4 } from 'uuid';
 
-import { useCurrentConversationContext } from "~/context/current.tsx";
-import { useUserDataContext } from "~/context/userData.tsx";
+import { useAppStateContext } from "~/context/appState.tsx";
 import { useWSClientContext } from "~/context/webSocket.tsx";
 
 export function MessageInput() {
-  const { contacts: { contacts, setContacts } } = useUserDataContext();
-  const { id: {id}, messages: { messages, setMessages } } = useCurrentConversationContext();
+  const { user: { user: { userId } }, messages: { messages, setMessages } } = useAppStateContext();
   const { WSClient } = useWSClientContext();
 
   const [text, setText] = useState<string>();
 
   function handleClick() {
     if (text) {
-      setMessages([...messages, { text, isOwnMessage: true, id: uuidv4() }]);
-      if (id) {
-        const change = contacts[id]?.messages.push({ text, isOwnMessage: true, id: uuidv4() });
-        if (change !== undefined) {
-          const newContacts = { ...contacts };
-          setContacts(newContacts);
-        }
-        WSClient.sendMessage(id, text);
+      const newMessage = { type: 'OwnMessage', text, messageId: uuidv4() } as const;
+      setMessages([...messages, newMessage]);
+      if (userId) {
+        WSClient.sendMessage(userId, text);
       }
       setText("");
     }
