@@ -1,14 +1,15 @@
+import type { WebSocketClient } from 'ppm-wasm';
 import type { Dispatch, SetStateAction } from 'react';
+
+export interface CustomState<T> {
+	value: T;
+	setValue: Dispatch<SetStateAction<T>>;
+}
 
 export interface SidebarButton {
 	userId: string;
 	displayName: string;
 	newMessages: number;
-}
-
-export interface SidebarState {
-	sidebarButtons: SidebarButton[];
-	setSidebarButtons: Dispatch<SetStateAction<SidebarButton[]>>;
 }
 
 export interface User {
@@ -18,24 +19,24 @@ export interface User {
 	status: 'online' | 'offline';
 }
 
-export interface UserState {
-	user: User;
-	setUser: Dispatch<SetStateAction<User>>;
-}
-
-export interface Message {
-	type: 'OwnMessage' | 'UserMessage';
+export interface UserMessage {
+	type: 'UserMessage';
 	messageId: string;
 	text: string;
 }
 
-export interface MessagesState {
-	messages: Message[];
-	setMessages: Dispatch<SetStateAction<Message[]>>;
+export interface OwnMessage {
+	type: 'OwnMessage';
+	messageId: string;
+	text: string;
+	status: 'pending' | 'sent' | 'failed';
 }
 
+export type Message = UserMessage | OwnMessage;
+
 export interface AppState {
-	sidebar: SidebarState;
-	user: UserState;
-	messages: MessagesState;
+	ws: WebSocketClient;
+	sidebar: CustomState<SidebarButton[]>;
+	user: CustomState<User>;
+	messages: CustomState<Message[]>;
 }

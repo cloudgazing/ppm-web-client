@@ -4,27 +4,26 @@ import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import { useAppStateContext } from '~/context/appState.loader.ts';
-import { useWSClientContext } from '~/context/webSocket.loader.ts';
 
 export function MessageInput() {
 	const {
 		user: {
-			user: { userId }
+			value: { userId }
 		},
-		messages: { messages, setMessages }
+		messages
 	} = useAppStateContext();
-	const { WSClient } = useWSClientContext();
+	const { ws } = useAppStateContext();
 
 	const [text, setText] = useState<string>();
 
 	function handleClick() {
-		if (text) {
-			const newMessage = { type: 'OwnMessage', text, messageId: uuidv4() } as const;
-			setMessages([...messages, newMessage]);
-			if (userId) {
-				WSClient.sendMessage(userId, text);
-			}
+		if (text && userId) {
+			const newMessage = { type: 'OwnMessage', text, messageId: uuidv4(), status: 'pending' } as const;
+
+			messages.setValue([...messages.value, newMessage]);
 			setText('');
+
+			ws.sendMessage(userId, text);
 		}
 	}
 

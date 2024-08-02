@@ -6,7 +6,7 @@ import { useAppStateContext } from '~/context/appState.loader.ts';
 export function UserIcon() {
 	const {
 		user: {
-			user: { displayName }
+			value: { displayName }
 		}
 	} = useAppStateContext();
 

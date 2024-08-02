@@ -6,7 +6,7 @@ import { useAppStateContext } from '~/context/appState.loader.ts';
 export function PersonStatus() {
 	const {
 		user: {
-			user: { userId, displayName, status }
+			value: { userId, displayName, status }
 		}
 	} = useAppStateContext();
 

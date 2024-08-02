@@ -13,7 +13,7 @@ export default tseslint.config(
 			parserOptions: {
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 				tsconfigRootDir: import.meta.dirname,
-				project: true,
+				project: true
 			}
 		},
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -23,5 +23,5 @@ export default tseslint.config(
 			'@typescript-eslint/no-confusing-void-expression': ['error', { ignoreArrowShorthand: true }]
 		}
 	},
-	{ ignores: ['vite.config.ts'] }
+	{ ignores: ['vite.config.ts', 'dist'] }
 );
