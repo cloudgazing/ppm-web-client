@@ -1,5 +1,7 @@
 [package]
 name = "web"
+description = "WASM module for the pppm web client"
+repository = "https://github.com/cloudgazing/ppm-web-client"
 version = "0.1.0"
 edition = "2021"
 
@@ -16,14 +18,15 @@ wasm-bindgen-futures = "0.4.42"
 x25519-dalek = {version="2.0.1", features=["static_secrets", "serde"]}
 xeddsa = "1.0.2"
 #bytes = "1.6.1"
-##warp = "0.3.7"
 serde = "1.0.204"
 #serde_bytes = "0.11.15"
 serde_json = "1.0.120"
 #hkdf = "0.12.4"
-#boring = "4.8.0"
 rand = "0.8.5"
 getrandom = {version = "0.2.15", features = ["js"]}
-web-sys = {version = "0.3.69", features = ["MessageEvent", "WebSocket"]}
+web-sys = {version = "0.3.69", features = ["MessageEvent", "WebSocket", "console"]}
 js-sys = "0.3.69"
 serde-wasm-bindgen = "0.6.5"
+
+ppm-models = {path = "./models"}
+

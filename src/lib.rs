@@ -1,11 +1,14 @@
-use wasm_bindgen::prelude::*;
+use std::sync::{Arc, Mutex};
+use wasm_bindgen::prelude::{wasm_bindgen, Closure, JsValue};
+use wasm_bindgen::JsCast;
 use web_sys::{MessageEvent, WebSocket};
 
-mod server;
+use ppm_models::client::ClientMessage;
+use ppm_models::server::{Notification, ServerMessage};
+
 mod storage;
 
-// change to wss !!!
-const WEB_SOCKET_URL: &str = "ws://127.0.0.1:3030";
+const WEB_SOCKET_URL: &str = "wss://ppm-wss.cloudgazing.dev";
 
 #[wasm_bindgen]
 extern "C" {
@@ -20,59 +23,92 @@ extern "C" {
 
 	#[wasm_bindgen(js_name = newConversationMessage)]
 	fn new_conversation_message(message: JsValue);
+
+	#[wasm_bindgen(js_name = sendMessage)]
+	fn send_message(message: JsValue);
+
+	#[wasm_bindgen(js_name = confirmLogin)]
+	fn confirm_login(token: &str);
 }
 
 #[wasm_bindgen]
 pub struct WebSocketClient {
 	ws: WebSocket,
+	_client: Arc<Mutex<Option<Arc<WebSocketClient>>>>,
 }
 
 #[wasm_bindgen]
 impl WebSocketClient {
-	#[wasm_bindgen(constructor)]
-	pub fn new() -> WebSocketClient {
+	#[wasm_bindgen]
+	pub fn new() -> *const WebSocketClient {
 		let ws = WebSocket::new(WEB_SOCKET_URL).expect("Failed to create WebSocket");
-		let client = WebSocketClient { ws };
 
-		let onmessage_callback = Closure::wrap(Box::new(move |e: MessageEvent| {
-			if let Some(text) = e.data().as_string() {
-				match serde_json::from_str::<server::ServerMessage>(&text) {
-					Ok(server::ServerMessage::NewMessage(data)) => {
-						// decrypt the message
-						// store the message
-						// display the message
+		let client = Arc::new(Mutex::new(None));
+		let ws_client = Arc::new(WebSocketClient {
+			ws,
+			_client: client.clone(),
+		});
+
+		{
+			let ws_client = ws_client.clone();
+			*client.lock().unwrap() = Some(ws_client);
+		}
+
+		let keep_alive_timer = Arc::new(Mutex::new(45_u8)); // 5 seconds leeway
+
+		let on_message = Closure::wrap(Box::new(move |e: MessageEvent| {
+			let message = match e.data().as_string() {
+				Some(message) => message,
+				None => return,
+			};
+
+			let server_message: ServerMessage = match serde_json::from_str(&message) {
+				Ok(message) => message,
+				Err(_) => return,
+			};
+
+			match server_message {
+				ServerMessage::Notification(data) => {
+					match data {
+						Notification::NewMessage(data) => {
+							// decrypt the message
+							// store the message
+							// display the message
+						}
 					}
-					Err(_) => {
-						println!("Onmessage error");
-					}
+				}
+				ServerMessage::KeepAlive(_) => {
+					let mut keep_alive_timer = keep_alive_timer.lock().unwrap();
+					*keep_alive_timer = 45;
+				}
+				ServerMessage::Welcome(data) => {
+					let client = client.lock().unwrap();
+					let client = client.as_ref().unwrap().clone();
+
+					// get the token from local storage
+					let token = "temp_token".to_string();
+
+					let client_message = ClientMessage::welcome_validation(data.signed_key, token);
+
+					let _ = client.ws.send_with_str(&client_message.to_data_string().unwrap());
 				}
 			}
 		}) as Box<dyn FnMut(MessageEvent)>);
 
-		client
-			.ws
-			.set_onmessage(Some(onmessage_callback.as_ref().unchecked_ref()));
-		onmessage_callback.forget();
+		ws_client.ws.set_onmessage(Some(on_message.as_ref().unchecked_ref()));
+		on_message.forget();
 
-		client
+		Arc::into_raw(ws_client)
 	}
 
 	#[wasm_bindgen(js_name = sendMessage)]
-	pub fn send_message(&self, user_id: String, message: String) -> Result<(), JsValue> {
-		let message_string = server::ClientMessage::sent_message_string(user_id, message).unwrap();
+	pub fn send_message(&self, user_id: String, message_text: String) {
+		//get the access token from local storage
+		let access_token = "eyJhbGciOiJIUzI1NiIsImtpZCI6Im15LWtleSJ9.eyJleHAiOjE3MjI2MjA3NTAsIm5iZiI6MTcyMTc1Njc1MCwiaWF0IjoxNzIxNzU2NzUwLCJ1c2VyX2lkIjoidGVzdC11c2VyLWlkIn0.MUl3YKD2CwyYil7QFTr34g26SMevJH4ITUbMCaxlVfU".to_string();
 
-		let result = self.ws.send_with_str(&message_string);
+		let client_message = ClientMessage::user_message(access_token, user_id, message_text);
 
-		result
-	}
-
-	#[wasm_bindgen(js_name = sendLogin)]
-	pub fn send_login(&self, access_key: String, password: String) -> Result<(), JsValue> {
-		let message_string = server::ClientMessage::login_data_string(access_key, password).unwrap();
-
-		let result = self.ws.send_with_str(&message_string);
-
-		result
+		let _ = self.ws.send_with_str(&client_message.to_data_string().unwrap());
 	}
 }
 
@@ -88,7 +124,7 @@ pub fn get_context_sidebar() -> Result<JsValue, JsValue> {
 		SidebarButton {
 			user_id: "user1".to_string(),
 			display_name: "User 1".to_string(),
-			new_messages: 0,
+			new_messages: 2,
 		},
 		SidebarButton {
 			user_id: "user2".to_string(),
@@ -98,7 +134,7 @@ pub fn get_context_sidebar() -> Result<JsValue, JsValue> {
 		SidebarButton {
 			user_id: "user3".to_string(),
 			display_name: "User 3".to_string(),
-			new_messages: 0,
+			new_messages: 10,
 		},
 	];
 
@@ -153,3 +189,5 @@ pub fn get_context_own_data() -> Result<JsValue, JsValue> {
 
 	Ok(serde_wasm_bindgen::to_value(&data)?)
 }
+
+//fn new_send_login(access_key: String, password: String) {}
