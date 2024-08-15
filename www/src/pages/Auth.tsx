@@ -1,18 +1,40 @@
 import { Card, Typography, Input, Button, ButtonGroup } from '@material-tailwind/react';
 import { FormEvent, useRef, useState } from 'react';
-//import { useAppStateContext } from '~/context/appState.loader.ts';
+
+interface JSResponse {
+	ok: boolean;
+	message: string;
+}
 
 function SignInForm() {
-	//const { ws } = useAppStateContext();
-
-	const accessKeyRef = useRef<HTMLInputElement>(null);
+	const usernameRef = useRef<HTMLInputElement>(null);
 	const passwordRef = useRef<HTMLInputElement>(null);
 
 	function formSubmit(e: FormEvent<HTMLFormElement>) {
 		e.preventDefault();
 
-		if (accessKeyRef.current?.value && passwordRef.current?.value) {
-			//ws.sendLogin(accessKeyRef.current.value, passwordRef.current.value);
+		const username = usernameRef.current?.value;
+		const password = passwordRef.current?.value;
+
+		if (username && password) {
+			void (async () => {
+				const { sendLogin } = await import('ppm-wasm');
+
+				try {
+					const resp = (await sendLogin(username, password)) as JSResponse;
+
+					if (resp.ok) {
+						alert('Login successful!');
+					} else {
+						alert(resp.message);
+					}
+				} catch (e) {
+					alert(e instanceof Error ? e.message : e);
+				}
+			})();
+
+			usernameRef.current.value = '';
+			passwordRef.current.value = '';
 		}
 	}
 
@@ -20,7 +42,7 @@ function SignInForm() {
 		<form className="mb-2 mt-8 w-80 max-w-screen-lg sm:w-96" onSubmit={formSubmit}>
 			<div className="mb-1 flex flex-col gap-6">
 				<Typography variant="h6" color="white" className="-mb-3">
-					Access Key
+					Username
 				</Typography>
 				<Input
 					size="lg"
@@ -28,7 +50,7 @@ function SignInForm() {
 					labelProps={{
 						className: 'before:content-none after:content-none'
 					}}
-					inputRef={accessKeyRef}
+					inputRef={usernameRef}
 					crossOrigin=""
 				/>
 				<Typography variant="h6" color="white" className="-mb-3">
@@ -53,17 +75,37 @@ function SignInForm() {
 }
 
 function SignUpForm() {
-	//const { ws } = useAppStateContext();
-
-	const accessKeyRef = useRef<HTMLInputElement>(null);
+	const usernameRef = useRef<HTMLInputElement>(null);
 	const passwordRef = useRef<HTMLInputElement>(null);
 	const displayNameRef = useRef<HTMLInputElement>(null);
 
 	function formSubmit(e: FormEvent<HTMLFormElement>) {
 		e.preventDefault();
 
-		if (accessKeyRef.current?.value && passwordRef.current?.value && displayNameRef.current?.value) {
-			//ws.sendSignup(accessKeyRef.current.value, passwordRef.current.value, displayNameRef.current.value);
+		const username = usernameRef.current?.value;
+		const password = passwordRef.current?.value;
+		const displayName = displayNameRef.current?.value;
+
+		if (username && password && displayName) {
+			void (async () => {
+				const { sendSignup } = await import('ppm-wasm');
+
+				try {
+					const resp = (await sendSignup(username, password, displayName)) as JSResponse;
+
+					if (resp.ok) {
+						alert('Login successful!');
+					} else {
+						alert(resp.message);
+					}
+				} catch (e) {
+					alert(e instanceof Error ? e.message : e);
+				}
+			})();
+
+			usernameRef.current.value = '';
+			passwordRef.current.value = '';
+			displayNameRef.current.value = '';
 		}
 	}
 
@@ -71,7 +113,7 @@ function SignUpForm() {
 		<form className="mb-2 mt-8 w-80 max-w-screen-lg sm:w-96" onSubmit={formSubmit}>
 			<div className="mb-1 flex flex-col gap-6">
 				<Typography variant="h6" color="white" className="-mb-3">
-					Access Key
+					Username
 				</Typography>
 				<Input
 					size="lg"
@@ -79,7 +121,7 @@ function SignUpForm() {
 					labelProps={{
 						className: 'before:content-none after:content-none'
 					}}
-					inputRef={accessKeyRef}
+					inputRef={usernameRef}
 					crossOrigin=""
 				/>
 				<Typography variant="h6" color="white" className="-mb-3">
@@ -115,7 +157,7 @@ function SignUpForm() {
 	);
 }
 
-export function Login() {
+export function Auth() {
 	const [isLogin, setIsLogin] = useState(true);
 
 	return (

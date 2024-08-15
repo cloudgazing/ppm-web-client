@@ -1,14 +1,14 @@
+pub mod auth;
+mod storage;
+
+use ppm_models::client;
+use ppm_models::server;
 use std::sync::{Arc, Mutex};
 use wasm_bindgen::prelude::{wasm_bindgen, Closure, JsValue};
 use wasm_bindgen::JsCast;
 use web_sys::{MessageEvent, WebSocket};
 
-use ppm_models::client::ClientMessage;
-use ppm_models::server::{Notification, ServerMessage};
-
-mod storage;
-
-const WEB_SOCKET_URL: &str = "wss://ppm-wss.cloudgazing.dev";
+const WEB_SOCKET_URL: &str = "wss://ppm.cloudgazing.dev/ws";
 
 #[wasm_bindgen]
 extern "C" {
@@ -62,35 +62,35 @@ impl WebSocketClient {
 				None => return,
 			};
 
-			let server_message: ServerMessage = match serde_json::from_str(&message) {
+			let server_message: server::message::Message = match serde_json::from_str(&message) {
 				Ok(message) => message,
 				Err(_) => return,
 			};
 
 			match server_message {
-				ServerMessage::Notification(data) => {
+				server::message::Message::Notification(data) => {
 					match data {
-						Notification::NewMessage(data) => {
+						server::message::Notification::NewMessage(_data) => {
 							// decrypt the message
 							// store the message
 							// display the message
 						}
 					}
 				}
-				ServerMessage::KeepAlive(_) => {
+				server::message::Message::KeepAlive(_) => {
 					let mut keep_alive_timer = keep_alive_timer.lock().unwrap();
 					*keep_alive_timer = 45;
 				}
-				ServerMessage::Welcome(data) => {
+				server::message::Message::Welcome(data) => {
 					let client = client.lock().unwrap();
 					let client = client.as_ref().unwrap().clone();
 
 					// get the token from local storage
 					let token = "temp_token".to_string();
 
-					let client_message = ClientMessage::welcome_validation(data.signed_key, token);
+					let client_message = client::message::Message::welcome_response(data.signed_key, token);
 
-					let _ = client.ws.send_with_str(&client_message.to_data_string().unwrap());
+					let _ = client.ws.send_with_str(&client_message.serialize().unwrap());
 				}
 			}
 		}) as Box<dyn FnMut(MessageEvent)>);
@@ -106,9 +106,9 @@ impl WebSocketClient {
 		//get the access token from local storage
 		let access_token = "eyJhbGciOiJIUzI1NiIsImtpZCI6Im15LWtleSJ9.eyJleHAiOjE3MjI2MjA3NTAsIm5iZiI6MTcyMTc1Njc1MCwiaWF0IjoxNzIxNzU2NzUwLCJ1c2VyX2lkIjoidGVzdC11c2VyLWlkIn0.MUl3YKD2CwyYil7QFTr34g26SMevJH4ITUbMCaxlVfU".to_string();
 
-		let client_message = ClientMessage::user_message(access_token, user_id, message_text);
+		let client_message = client::message::Message::user_message(access_token, user_id, message_text);
 
-		let _ = self.ws.send_with_str(&client_message.to_data_string().unwrap());
+		let _ = self.ws.send_with_str(&client_message.serialize().unwrap());
 	}
 }
 
@@ -189,5 +189,3 @@ pub fn get_context_own_data() -> Result<JsValue, JsValue> {
 
 	Ok(serde_wasm_bindgen::to_value(&data)?)
 }
-
-//fn new_send_login(access_key: String, password: String) {}

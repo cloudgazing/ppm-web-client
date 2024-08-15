@@ -1,30 +1,69 @@
-import { useEffect, useState } from 'react';
-import { Spinner } from '@material-tailwind/react';
+import { Dispatch, SetStateAction, useState } from 'react';
+import { createBrowserRouter, redirect, RouterProvider } from 'react-router-dom';
 
-//import { Chat } from '~/pages/Chat.tsx';
-import { Login } from '~/pages/Login.tsx';
-import { AppStateContextProvider } from '~/context/appState.provider.tsx';
+import { Auth } from '~/pages/Auth.tsx';
+import { Chat } from '~/pages/Chat.tsx';
+import { NotFound } from '~/pages/NotFound.tsx';
 
-import init from 'ppm-wasm';
+async function loader(setLoaded: React.Dispatch<React.SetStateAction<boolean>>) {
+	const { default: init, getCsrf, sendValidate } = await import('ppm-wasm');
+
+	await init();
+
+	try {
+		await getCsrf();
+
+		const valid = await sendValidate();
+
+		if (valid) setLoaded(true);
+
+		return valid;
+	} catch (e) {
+		console.error(e instanceof Error ? e.message : e);
+
+		return null;
+	}
+}
+
+function router(_loaded: boolean, setLoaded: Dispatch<SetStateAction<boolean>>) {
+	return createBrowserRouter([
+		{
+			path: '/',
+			loader: async () => {
+				const authenticated = await loader(setLoaded);
+
+				if (authenticated === false) {
+					return redirect('/auth');
+				}
+
+				return null;
+			},
+			element: <Chat />,
+			errorElement: <div>chat server down</div>
+		},
+		{
+			path: '/auth',
+			loader: async () => {
+				const authenticated = await loader(setLoaded);
+
+				if (authenticated === true) {
+					return redirect('/');
+				}
+
+				return null;
+			},
+			element: <Auth />,
+			errorElement: <div>auth server down</div>
+		},
+		{
+			path: '*',
+			element: <NotFound />
+		}
+	]);
+}
 
 export function App() {
-	const [isLoaded, setIsLoaded] = useState(false);
+	const [loaded, setLoaded] = useState(false);
 
-	useEffect(() => {
-		async function initwasm() {
-			await init();
-			setIsLoaded(true);
-		}
-		void initwasm();
-	}, []);
-
-	return isLoaded ? (
-		<AppStateContextProvider>
-			<Login />
-		</AppStateContextProvider>
-	) : (
-		<div className="flex h-screen items-center justify-center bg-gray-900 text-white transition-all duration-1000 ease-linear">
-			<Spinner className="h-10 w-10" />
-		</div>
-	);
+	return <RouterProvider router={router(loaded, setLoaded)} />;
 }

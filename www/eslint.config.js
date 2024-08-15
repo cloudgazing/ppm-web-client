@@ -23,5 +23,5 @@ export default tseslint.config(
 			'@typescript-eslint/no-confusing-void-expression': ['error', { ignoreArrowShorthand: true }]
 		}
 	},
-	{ ignores: ['vite.config.ts', 'dist'] }
+	{ ignores: ['vite.config.ts', 'dist', '.vercel'] }
 );

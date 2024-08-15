@@ -6,6 +6,7 @@ import { PersonStatus } from '~/components/PersonStatus.tsx';
 import { Sidebar } from '~/components/Sidebar.tsx';
 import { UserIcon } from '~/components/UserIcon.tsx';
 import { useAppStateContext } from '~/context/appState.loader.ts';
+import { AppStateContextProvider } from '~/context/appState.provider.tsx';
 
 function MainHeader() {
 	return (
@@ -42,5 +43,9 @@ function MainInterface() {
 }
 
 export function Chat() {
-	return <MainInterface />;
+	return (
+		<AppStateContextProvider>
+			<MainInterface />
+		</AppStateContextProvider>
+	);
 }
