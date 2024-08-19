@@ -1,7 +1,7 @@
 import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import prettierConfig from 'eslint-config-prettier';
-import importPlugin from 'eslint-plugin-import';
+import importPlugin from 'eslint-plugin-import-x';
 
 export default tseslint.config(
 	eslint.configs.recommended,
@@ -11,12 +11,10 @@ export default tseslint.config(
 	{
 		languageOptions: {
 			parserOptions: {
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-				tsconfigRootDir: import.meta.dirname,
+				tsconfigRootDir: __dirname,
 				project: true
 			}
 		},
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		plugins: { import: importPlugin },
 		rules: {
 			'import/extensions': ['error', 'ignorePackages'],
