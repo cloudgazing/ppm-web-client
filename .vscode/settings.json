@@ -2,7 +2,7 @@
 	"[rust]": {
 		"editor.defaultFormatter": "rust-lang.rust-analyzer",
 		"editor.formatOnSave": true,
-		"editor.formatOnSaveMode": "file",
+		"editor.formatOnSaveMode": "file"
 	},
 	"rust-analyzer.cargo.target": "wasm32-unknown-unknown",
 	"lldb.displayFormat": "auto",
@@ -11,6 +11,10 @@
 	"lldb.consoleMode": "commands",
 	"typescript.tsdk": "./www/node_modules/typescript/lib",
 	"prettier.prettierPath": "./www/node_modules/prettier",
+	"eslint.options": {
+		"flags": ["unstable_ts_config"],
+		"overrideConfigFile": "./www/eslint.config.ts"
+	},
 	"[javascript][typescript][typescriptreact][html]": {
 		"editor.formatOnSave": true,
 		"editor.defaultFormatter": "esbenp.prettier-vscode"

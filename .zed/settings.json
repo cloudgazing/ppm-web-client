@@ -1,0 +1,33 @@
+{
+	"languages": {
+		"Rust": {
+			"format_on_save": "on",
+			"formatter": "language_server"
+		},
+		"JavaScript": {
+			"formatter": "prettier",
+			"format_on_save": "true"
+		},
+		"TypeScript": {
+			"formatter": "prettier",
+			"format_on_save": "prettier"
+		},
+		"TSX": {
+			"formatter": "prettier",
+			"format_on_save": "prettier"
+		},
+		"HTML": {
+			"formatter": "prettier",
+			"format_on_save": "prettier"
+		}
+	},
+	"lsp": {
+		"rust-analyzer": {
+			"initialization_options": {
+				"cargo": {
+					"target": "wasm32-unknown-unknown"
+				}
+			}
+		}
+	}
+}
