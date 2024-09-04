@@ -1,0 +1,101 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "WASM build (dev)",
+			"type": "shell",
+			"command": "wasm-pack",
+			"args": [
+				"build",
+				"--dev",
+				"--target",
+				"web"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": [],
+			"detail": "Build with wasm-pack in dev mode. (default task)"
+		},
+		{
+			"label": "WASM build (release)",
+			"type": "shell",
+			"command": "wasm-pack",
+			"args": [
+				"build",
+				"--release",
+				"--target",
+				"web"
+			],
+			"group":"build",
+			"problemMatcher": [],
+			"detail": "Build with wasm-pack in release mode."
+		},
+		{
+			"label": "WASM build (release, minified)",
+			"type": "shell",
+			"command": "wasm-pack",
+			"args": [
+				"build",
+				"--release",
+				"--target",
+				"web",
+				"--manifest-path",
+				"Cargo.toml",
+				"-Z",
+				"build-std=panic_abort,std",
+				"-Z",
+				"build-std-features=panic_immediate_abort"
+			],
+			"group": "build",
+			"problemMatcher": [],
+			"detail": "Build with wasm-pack in release mode, with minification."
+		},
+		{
+			"label": "Vercel build",
+			"type": "shell",
+			"command": "vercel",
+			"options": {
+				"cwd": "${workspaceFolder}/www"
+			},
+			"args": [
+				"build",
+				"--prod"
+			],
+			"detail": "(Pre)build project before deploying."
+		},
+		{
+			"label": "Vercel deploy",
+			"type": "shell",
+			"command": "vercel",
+			"options": {
+				"cwd": "${workspaceFolder}/www"
+			},
+			"args": [
+				"deploy",
+				"--prebuilt",
+				"--prod"
+			],
+			"detail": "Deploy project to vercel."
+		},
+		{
+			"label": "Vercel build and deploy",
+			"dependsOrder": "sequence",
+			"dependsOn": ["Vercel build", "Vercel deploy"],
+			"detail": "Build and deploy project to vercel."
+		},
+		{
+			"label": "Full deploy (dev)",
+			"dependsOrder": "sequence",
+			"dependsOn": ["WASM build (dev)", "Vercel build and deploy"],
+			"detail": "Do a full build of the whole project and deploy it."
+		},
+		{
+			"label": "Full deploy (release)",
+			"dependsOrder": "sequence",
+			"dependsOn": ["WASM build (release)", "Vercel build and deploy"],
+			"detail": "Do a full build of the whole project and deploy it."
+		}
+	]
+}

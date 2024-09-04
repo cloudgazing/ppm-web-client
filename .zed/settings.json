@@ -6,19 +6,19 @@
 		},
 		"JavaScript": {
 			"formatter": "prettier",
-			"format_on_save": "true"
+			"format_on_save": "on"
 		},
 		"TypeScript": {
 			"formatter": "prettier",
-			"format_on_save": "prettier"
+			"format_on_save": "on"
 		},
 		"TSX": {
 			"formatter": "prettier",
-			"format_on_save": "prettier"
+			"format_on_save": "on"
 		},
 		"HTML": {
 			"formatter": "prettier",
-			"format_on_save": "prettier"
+			"format_on_save": "on"
 		}
 	},
 	"lsp": {
