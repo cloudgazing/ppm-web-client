@@ -63,6 +63,7 @@
 				"build",
 				"--prod"
 			],
+			"problemMatcher": [],
 			"detail": "(Pre)build project before deploying."
 		},
 		{
@@ -77,24 +78,28 @@
 				"--prebuilt",
 				"--prod"
 			],
+			"problemMatcher": [],
 			"detail": "Deploy project to vercel."
 		},
 		{
 			"label": "Vercel build and deploy",
 			"dependsOrder": "sequence",
 			"dependsOn": ["Vercel build", "Vercel deploy"],
+			"problemMatcher": [],
 			"detail": "Build and deploy project to vercel."
 		},
 		{
 			"label": "Full deploy (dev)",
 			"dependsOrder": "sequence",
 			"dependsOn": ["WASM build (dev)", "Vercel build and deploy"],
+			"problemMatcher": [],
 			"detail": "Do a full build of the whole project and deploy it."
 		},
 		{
 			"label": "Full deploy (release)",
 			"dependsOrder": "sequence",
 			"dependsOn": ["WASM build (release)", "Vercel build and deploy"],
+			"problemMatcher": [],
 			"detail": "Do a full build of the whole project and deploy it."
 		}
 	]
