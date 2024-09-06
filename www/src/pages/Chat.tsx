@@ -1,51 +1,24 @@
-import { useEffect, useRef } from 'react';
-
-import { MessageInput } from '~/components/MessageInput.tsx';
-import { MessagesContainer } from '~/components/MessagesContainer.tsx';
-import { PersonStatus } from '~/components/PersonStatus.tsx';
-import { Sidebar } from '~/components/Sidebar.tsx';
-import { UserIcon } from '~/components/UserIcon.tsx';
-import { useAppStateContext } from '~/context/appState.loader.ts';
 import { AppStateContextProvider } from '~/context/appState.provider.tsx';
-
-function MainHeader() {
-	return (
-		<div className="flex items-center justify-between">
-			<PersonStatus />
-			<UserIcon />
-		</div>
-	);
-}
-
-function MainInterface() {
-	const {
-		messages: { value }
-	} = useAppStateContext();
-
-	const containerRef = useRef<HTMLDivElement>(null);
-
-	useEffect(() => {
-		if (containerRef.current) {
-			containerRef.current.scrollTop = containerRef.current.scrollHeight;
-		}
-	}, [value]);
-
-	return (
-		<div className="flex h-screen">
-			<Sidebar />
-			<main className="flex flex-1 flex-col gap-3 bg-gray-900 p-3">
-				<MainHeader />
-				<MessagesContainer ref={containerRef} />
-				<MessageInput />
-			</main>
-		</div>
-	);
-}
+import { SheetSidebar } from '~/components/SheetSidebar.tsx';
+import { Sidebar } from '~/components/Sidebar.tsx';
+import { UserButton } from '~/components/UserButton.tsx';
+import { MessagesContainer } from '~/components/MessagesContainer.tsx';
 
 export function Chat() {
 	return (
 		<AppStateContextProvider>
-			<MainInterface />
+			<div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
+				<Sidebar />
+				<div className="flex flex-col">
+					<header className="flex h-14 flex-row-reverse items-center justify-between gap-4 px-4 lg:h-[60px] lg:px-6">
+						<UserButton />
+						<SheetSidebar />
+					</header>
+					<main className="flex flex-1 flex-col justify-between gap-4 p-4 lg:gap-6 lg:p-6">
+						<MessagesContainer />
+					</main>
+				</div>
+			</div>
 		</AppStateContextProvider>
 	);
 }

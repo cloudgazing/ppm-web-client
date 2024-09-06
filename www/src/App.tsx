@@ -1,9 +1,7 @@
 import { Dispatch, SetStateAction, useState } from 'react';
-import { createBrowserRouter, redirect, RouterProvider } from 'react-router-dom';
+import { RouterProvider, createBrowserRouter, redirect } from 'react-router-dom';
 
-import { Auth } from '~/pages/Auth.tsx';
-import { Chat } from '~/pages/Chat.tsx';
-import { NotFound } from '~/pages/NotFound.tsx';
+import { ThemeProvider } from '~/providers/theme-provider.tsx';
 
 async function loader(setLoaded: React.Dispatch<React.SetStateAction<boolean>>) {
 	const { default: init, getCsrf, sendValidate } = await import('ppm-wasm');
@@ -29,41 +27,61 @@ function router(_loaded: boolean, setLoaded: Dispatch<SetStateAction<boolean>>) 
 	return createBrowserRouter([
 		{
 			path: '/',
-			loader: async () => {
-				const authenticated = await loader(setLoaded);
+			async lazy() {
+				const { Chat } = await import('~/pages/Chat.tsx');
 
-				if (authenticated === false) {
-					return redirect('/auth');
-				}
+				return {
+					Component: Chat,
+					errorElement: <div>chat server down</div>,
+					loader: async () => {
+						const authenticated = await loader(setLoaded);
 
-				return null;
+						if (authenticated === false) {
+							return redirect('/auth');
+						}
+
+						return null;
+					},
+				};
 			},
-			element: <Chat />,
-			errorElement: <div>chat server down</div>
 		},
 		{
 			path: '/auth',
-			loader: async () => {
-				const authenticated = await loader(setLoaded);
+			async lazy() {
+				const { Auth } = await import('~/pages/Auth.tsx');
 
-				if (authenticated === true) {
-					return redirect('/');
-				}
+				return {
+					Component: Auth,
+					errorElement: <div>auth server down</div>,
+					loader: async () => {
+						const authenticated = await loader(setLoaded);
 
-				return null;
+						if (authenticated === true) {
+							return redirect('/');
+						}
+
+						return null;
+					},
+				};
 			},
-			element: <Auth />,
-			errorElement: <div>auth server down</div>
 		},
 		{
 			path: '*',
-			element: <NotFound />
-		}
+			async lazy() {
+				const { NotFound } = await import('~/pages/NotFound.tsx');
+
+				return { Component: NotFound };
+			},
+		},
 	]);
 }
 
 export function App() {
 	const [loaded, setLoaded] = useState(false);
 
-	return <RouterProvider router={router(loaded, setLoaded)} />;
+	return (
+		<ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+			<RouterProvider router={router(loaded, setLoaded)} />
+		</ThemeProvider>
+	);
 }

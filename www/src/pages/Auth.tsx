@@ -1,28 +1,24 @@
-import { Card, Typography, Input, Button, ButtonGroup } from '@material-tailwind/react';
-import { FormEvent, useRef, useState } from 'react';
+import { useRef } from 'react';
 
-interface JSResponse {
-	ok: boolean;
-	message: string;
-}
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '~/components/ui/card.tsx';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs.tsx';
+import { Button } from '~/components/ui/button.tsx';
+import { Input } from '~/components/ui/input.tsx';
+import { Label } from '~/components/ui/label.tsx';
 
-function SignInForm() {
+function LoginTab() {
 	const usernameRef = useRef<HTMLInputElement>(null);
 	const passwordRef = useRef<HTMLInputElement>(null);
 
-	function formSubmit(e: FormEvent<HTMLFormElement>) {
-		e.preventDefault();
-
+	function submitData() {
 		const username = usernameRef.current?.value;
 		const password = passwordRef.current?.value;
 
 		if (username && password) {
 			void (async () => {
-				const { sendLogin } = await import('ppm-wasm');
-
+				const { sendAuthLogin } = await import('ppm-wasm');
 				try {
-					const resp = (await sendLogin(username, password)) as JSResponse;
-
+					const resp = await sendAuthLogin(username, password);
 					if (resp.ok) {
 						alert('Login successful!');
 					} else {
@@ -39,60 +35,45 @@ function SignInForm() {
 	}
 
 	return (
-		<form className="mb-2 mt-8 w-80 max-w-screen-lg sm:w-96" onSubmit={formSubmit}>
-			<div className="mb-1 flex flex-col gap-6">
-				<Typography variant="h6" color="white" className="-mb-3">
-					Username
-				</Typography>
-				<Input
-					size="lg"
-					className="!border-gray-700 text-white focus:!border-gray-50"
-					labelProps={{
-						className: 'before:content-none after:content-none'
-					}}
-					inputRef={usernameRef}
-					crossOrigin=""
-				/>
-				<Typography variant="h6" color="white" className="-mb-3">
-					Password
-				</Typography>
-				<Input
-					type="password"
-					size="lg"
-					className="!border-gray-700 text-white focus:!border-gray-50"
-					labelProps={{
-						className: 'before:content-none after:content-none'
-					}}
-					inputRef={passwordRef}
-					crossOrigin=""
-				/>
-			</div>
-			<Button color="white" className="mt-6" fullWidth type="submit">
-				Continue
-			</Button>
-		</form>
+		<Card>
+			<CardHeader>
+				<CardTitle>Log In</CardTitle>
+				<CardDescription>Log into an existing account.</CardDescription>
+			</CardHeader>
+			<CardContent className="space-y-2">
+				<div className="space-y-1">
+					<Label htmlFor="username">Username</Label>
+					<Input id="username" ref={usernameRef} />
+				</div>
+				<div className="space-y-1">
+					<Label htmlFor="password">Password</Label>
+					<Input id="password" type="password" ref={passwordRef} />
+				</div>
+			</CardContent>
+			<CardFooter>
+				<Button onClick={submitData}>Continue</Button>
+			</CardFooter>
+		</Card>
 	);
 }
 
-function SignUpForm() {
+function SignUpTab() {
 	const usernameRef = useRef<HTMLInputElement>(null);
 	const passwordRef = useRef<HTMLInputElement>(null);
+	const passwordVerifyRef = useRef<HTMLInputElement>(null);
 	const displayNameRef = useRef<HTMLInputElement>(null);
 
-	function formSubmit(e: FormEvent<HTMLFormElement>) {
-		e.preventDefault();
-
+	function submitData() {
 		const username = usernameRef.current?.value;
 		const password = passwordRef.current?.value;
+		const passwordVerify = passwordVerifyRef.current?.value;
 		const displayName = displayNameRef.current?.value;
 
-		if (username && password && displayName) {
+		if (username && password && passwordVerify && displayName) {
 			void (async () => {
-				const { sendSignup } = await import('ppm-wasm');
-
+				const { sendAuthSignup } = await import('ppm-wasm');
 				try {
-					const resp = (await sendSignup(username, password, displayName)) as JSResponse;
-
+					const resp = await sendAuthSignup(username, password, displayName);
 					if (resp.ok) {
 						alert('Login successful!');
 					} else {
@@ -105,72 +86,59 @@ function SignUpForm() {
 
 			usernameRef.current.value = '';
 			passwordRef.current.value = '';
+			passwordVerifyRef.current.value = '';
 			displayNameRef.current.value = '';
 		}
 	}
 
 	return (
-		<form className="mb-2 mt-8 w-80 max-w-screen-lg sm:w-96" onSubmit={formSubmit}>
-			<div className="mb-1 flex flex-col gap-6">
-				<Typography variant="h6" color="white" className="-mb-3">
-					Username
-				</Typography>
-				<Input
-					size="lg"
-					className="!border-gray-700 text-white focus:!border-gray-50"
-					labelProps={{
-						className: 'before:content-none after:content-none'
-					}}
-					inputRef={usernameRef}
-					crossOrigin=""
-				/>
-				<Typography variant="h6" color="white" className="-mb-3">
-					Password
-				</Typography>
-				<Input
-					type="password"
-					size="lg"
-					className="!border-gray-700 text-white focus:!border-gray-50"
-					labelProps={{
-						className: 'before:content-none after:content-none'
-					}}
-					inputRef={passwordRef}
-					crossOrigin=""
-				/>
-				<Typography variant="h6" color="white" className="-mb-3">
-					Display Name
-				</Typography>
-				<Input
-					size="lg"
-					className="!border-gray-700 text-white focus:!border-gray-50"
-					labelProps={{
-						className: 'before:content-none after:content-none'
-					}}
-					inputRef={displayNameRef}
-					crossOrigin=""
-				/>
-			</div>
-			<Button color="white" className="mt-6" fullWidth type="submit">
-				Continue
-			</Button>
-		</form>
+		<Card>
+			<CardHeader>
+				<CardTitle>Sign Up</CardTitle>
+				<CardDescription>Create a new account.</CardDescription>
+			</CardHeader>
+			<CardContent className="space-y-2">
+				<div className="space-y-1">
+					<Label htmlFor="username">Username</Label>
+					<Input id="username" ref={usernameRef} />
+				</div>
+				<div className="space-y-1">
+					<Label htmlFor="password">Password</Label>
+					<Input id="password" type="password" ref={passwordRef} />
+				</div>
+				<div className="space-y-1">
+					<Label htmlFor="verify-password">Verify Password</Label>
+					<Input id="verify-password" type="password" ref={passwordVerifyRef} />
+				</div>
+				<div className="space-y-1">
+					<Label htmlFor="display-name">Display Name</Label>
+					<Input id="display-name" ref={displayNameRef} />
+				</div>
+			</CardContent>
+			<CardFooter>
+				<Button onClick={submitData}>Continue</Button>
+			</CardFooter>
+		</Card>
 	);
 }
 
 export function Auth() {
-	const [isLogin, setIsLogin] = useState(true);
-
 	return (
-		<main className="relative h-screen w-screen bg-gray-900">
-			<div className="absolute left-1/2 top-1/4 flex -translate-x-1/2 transform flex-col items-center">
-				<ButtonGroup color="white">
-					<Button onClick={() => setIsLogin(true)}>Log In</Button>
-					<Button onClick={() => setIsLogin(false)}>Sign Up</Button>
-				</ButtonGroup>
-				<Card color="transparent" shadow={false}>
-					{isLogin ? <SignInForm /> : <SignUpForm />}
-				</Card>
-			</div>
+		<main className="mt-40 flex flex-col items-center gap-4">
+			<Tabs defaultValue="login" className="w-[400px]">
+				<TabsList className="grid w-full grid-cols-2">
+					<TabsTrigger value="login">Log In</TabsTrigger>
+					<TabsTrigger value="signup">Sign Up</TabsTrigger>
+				</TabsList>
+				<TabsContent value="login">
+					<LoginTab />
+				</TabsContent>
+				<TabsContent value="signup">
+					<SignUpTab />
+				</TabsContent>
+			</Tabs>
+			<p>OR</p>
+			<Button>Start a quick conversation</Button>
 		</main>
 	);
 }

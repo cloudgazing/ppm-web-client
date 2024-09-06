@@ -1,51 +1,31 @@
-import type { CustomState, Message, OwnMessage, SidebarButton, User } from '~/types/appState.ts';
 import type { ReactNode } from 'react';
+import type { ConversationMessage, OpenUserInfo, SidebarPerson } from 'ppm-wasm';
 
-import { useState } from 'react';
-
-import { getContextConversation, getContextSidebar, WebSocketClient } from 'ppm-wasm';
+import { useMemo, useState } from 'react';
+import { WasmState } from 'ppm-wasm';
 
 import { ContextProvider } from '~/context/appState.loader.ts';
 
-declare global {
-	interface Window {
-		onMessageReceived: (message: string) => void;
-		sendMessage: (message: OwnMessage) => void;
-		confirmLogin: (token: string) => void;
-	}
+function displayErr() {
+	return;
 }
 
 function AppStateContextProvider({ children }: { children: ReactNode }) {
-	const sidebar: CustomState<SidebarButton[]> = {} as CustomState<SidebarButton[]>;
-	const user: CustomState<User> = {} as CustomState<User>;
-	const messages: CustomState<Message[]> = {} as CustomState<Message[]>;
+	const [generalState, setGeneralState] = useState<SidebarPerson[]>([]);
 
-	const ws = new WebSocketClient();
-	const conv = getContextConversation() as [User, Message[]];
+	const [openUserInfo, setOpenUserInfo] = useState<OpenUserInfo | null>(null);
 
-	[sidebar.value, sidebar.setValue] = useState(getContextSidebar() as SidebarButton[]);
-	[user.value, user.setValue] = useState(conv[0]);
-	[messages.value, messages.setValue] = useState(conv[1]);
+	const [messages, setMessages] = useState<ConversationMessage[]>([]);
 
-	window.onMessageReceived = message => {
-		console.log(message);
-	};
-	window.sendMessage = message => {
-		messages.setValue(prevMessages => {
-			const newMessages = [...prevMessages];
+	const wasmState = useMemo(() => {
+		const state = new WasmState(setGeneralState, setOpenUserInfo, setMessages, displayErr);
 
-			console.log(message);
+		state.initState();
 
-			newMessages[newMessages.length - 1] = message;
+		return state;
+	}, []);
 
-			return newMessages;
-		});
-	};
-	window.confirmLogin = token => {
-		console.log(token);
-	};
-
-	return <ContextProvider value={{ sidebar, user, messages, ws }}>{children}</ContextProvider>;
+	return <ContextProvider value={{ generalState, openUserInfo, messages, wasmState }}>{children}</ContextProvider>;
 }
 
 export { AppStateContextProvider };

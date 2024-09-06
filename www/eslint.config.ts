@@ -1,7 +1,7 @@
 import eslint from '@eslint/js';
-import tseslint from 'typescript-eslint';
 import prettierConfig from 'eslint-config-prettier';
 import importPlugin from 'eslint-plugin-import-x';
+import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
 	eslint.configs.recommended,
@@ -12,14 +12,22 @@ export default tseslint.config(
 		languageOptions: {
 			parserOptions: {
 				tsconfigRootDir: __dirname,
-				project: true
-			}
+				project: true,
+			},
+			sourceType: 'module',
 		},
 		plugins: { import: importPlugin },
 		rules: {
 			'import/extensions': ['error', 'ignorePackages'],
-			'@typescript-eslint/no-confusing-void-expression': ['error', { ignoreArrowShorthand: true }]
-		}
+			'import/order': [
+				'warn',
+				{
+					groups: ['type', 'builtin', 'external', ['internal', 'parent', 'sibling'], 'index', 'object', 'unknown'],
+					'newlines-between': 'always',
+				},
+			],
+			'@typescript-eslint/no-confusing-void-expression': ['error', { ignoreArrowShorthand: true }],
+		},
 	},
-	{ ignores: ['vite.config.ts', 'dist', '.vercel'] }
+	{ ignores: ['dist', '.vercel'] }
 );

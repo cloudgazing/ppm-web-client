@@ -1,23 +1,34 @@
 use std::time::Duration;
 
 use ppm_models::client::auth::{LoginData, SignupData};
-use ppm_models::server::auth::{BasicResponse, LoginConfirmation, SignupConfirmation};
+use ppm_models::server::auth::{LoginConfirmation, SignupConfirmation, VerifyResponse};
 use reqwest::header::{HeaderName, ACCEPT, AUTHORIZATION, CONTENT_TYPE};
+use tsify_next::Tsify;
 use wasm_bindgen::prelude::wasm_bindgen;
-use wasm_bindgen::{JsError, JsValue, UnwrapThrowExt};
+use wasm_bindgen::{JsError, UnwrapThrowExt};
 use wasm_cookies::CookieOptions;
 
-#[derive(serde::Deserialize, serde::Serialize)]
-struct JSResponse<'a> {
+const CMW_URL: &str = "https://gateway.cloudgazing.dev/cmw";
+const LOGIN_URL: &str = "https://gateway.cloudgazing.dev/auth/login";
+const SIGNUP_URL: &str = "https://gateway.cloudgazing.dev/auth/signup";
+const VERIFY_URL: &str = "https://gateway.cloudgazing.dev/auth/verify";
+
+#[derive(serde::Deserialize, serde::Serialize, Tsify)]
+#[tsify(into_wasm_abi)]
+pub struct AuthResponse {
 	ok: bool,
-	message: &'a str,
+	message: String,
+}
+
+impl AuthResponse {
+	pub fn new(ok: bool, message: String) -> Self {
+		Self { ok, message }
+	}
 }
 
 #[wasm_bindgen(js_name = getCsrf)]
-pub async fn get_csrf() -> Result<(), JsError> {
-	let req = reqwest::Client::new()
-		.get("https://ppm.cloudgazing.dev/auth")
-		.fetch_credentials_include();
+pub async fn get_csrf_middleware() -> Result<(), JsError> {
+	let req = reqwest::Client::new().get(CMW_URL).fetch_credentials_include();
 
 	match req.send().await {
 		Ok(_) => Ok(()),
@@ -25,8 +36,8 @@ pub async fn get_csrf() -> Result<(), JsError> {
 	}
 }
 
-#[wasm_bindgen(js_name = sendLogin)]
-pub async fn send_login(username: &str, password: &str) -> Result<JsValue, JsError> {
+#[wasm_bindgen(js_name = sendAuthLogin)]
+pub async fn send_auth_login(username: &str, password: &str) -> Result<AuthResponse, JsError> {
 	let token = wasm_cookies::get("__Secure-Csrf-Token")
 		.expect_throw("Secure token missing!!")
 		.expect_throw("Token encoding error");
@@ -34,7 +45,7 @@ pub async fn send_login(username: &str, password: &str) -> Result<JsValue, JsErr
 	let login_data = LoginData::new(username, password);
 
 	let req = reqwest::Client::new()
-		.post("https://ppm.cloudgazing.dev/auth/login")
+		.post(LOGIN_URL)
 		.header(CONTENT_TYPE, "application/json")
 		.header(ACCEPT, "application/json")
 		.header(AUTHORIZATION, "Bearer {token}")
@@ -49,26 +60,23 @@ pub async fn send_login(username: &str, password: &str) -> Result<JsValue, JsErr
 
 	match resp.text().await {
 		Ok(text) => match serde_json::from_str::<LoginConfirmation>(&text) {
-			Ok(LoginConfirmation::Success(data)) => {
+			Ok(LoginConfirmation::Success(token)) => {
 				let options = CookieOptions::default()
 					.with_domain(".cloudgazing.dev")
 					.expires_after(Duration::from_secs(86400)) // 10 days
 					.secure()
 					.with_same_site(wasm_cookies::SameSite::None);
 
-				wasm_cookies::set("AT", &data.jwt, &options);
+				wasm_cookies::set("AT", token, &options);
 
-				let js_resp = JSResponse {
-					ok: true,
-					message: "Login successful",
-				};
+				let js_resp = AuthResponse::new(true, "Login successful".to_string());
 
-				Ok(serde_wasm_bindgen::to_value(&js_resp)?)
+				Ok(js_resp)
 			}
-			Ok(LoginConfirmation::Failure(message)) => {
-				let js_resp = JSResponse { ok: false, message };
+			Ok(LoginConfirmation::Error(e)) => {
+				let js_resp = AuthResponse::new(false, e.as_str().to_string());
 
-				Ok(serde_wasm_bindgen::to_value(&js_resp)?)
+				Ok(js_resp)
 			}
 			Err(_) => Err(JsError::new("Bad server response")),
 		},
@@ -76,8 +84,8 @@ pub async fn send_login(username: &str, password: &str) -> Result<JsValue, JsErr
 	}
 }
 
-#[wasm_bindgen(js_name = sendSignup)]
-pub async fn send_signup(username: &str, password: &str, display_name: &str) -> Result<JsValue, JsError> {
+#[wasm_bindgen(js_name = sendAuthSignup)]
+pub async fn send_auth_signup(username: &str, password: &str, display_name: &str) -> Result<AuthResponse, JsError> {
 	let token = wasm_cookies::get("__Secure-Csrf-Token")
 		.expect_throw("Secure token missing!!")
 		.expect_throw("Token encoding error");
@@ -85,7 +93,7 @@ pub async fn send_signup(username: &str, password: &str, display_name: &str) -> 
 	let signup_data = SignupData::new(username, password, display_name);
 
 	let req = reqwest::Client::new()
-		.post("https://ppm.cloudgazing.dev/auth/signup")
+		.post(SIGNUP_URL)
 		.header(CONTENT_TYPE, "application/json")
 		.header(ACCEPT, "application/json")
 		.header(AUTHORIZATION, "Bearer {token}")
@@ -100,26 +108,23 @@ pub async fn send_signup(username: &str, password: &str, display_name: &str) -> 
 
 	match resp.text().await {
 		Ok(text) => match serde_json::from_str::<SignupConfirmation>(&text) {
-			Ok(SignupConfirmation::Success(data)) => {
+			Ok(SignupConfirmation::Success(token)) => {
 				let options = CookieOptions::default()
 					.with_domain(".cloudgazing.dev")
 					.expires_after(Duration::from_secs(86400)) // 10 days
 					.secure()
 					.with_same_site(wasm_cookies::SameSite::None);
 
-				wasm_cookies::set("AT", &data.jwt, &options);
+				wasm_cookies::set("AT", token, &options);
 
-				let js_resp = JSResponse {
-					ok: true,
-					message: "Signup successful",
-				};
+				let js_resp = AuthResponse::new(true, "Signup successful".to_string());
 
-				Ok(serde_wasm_bindgen::to_value(&js_resp)?)
+				Ok(js_resp)
 			}
-			Ok(SignupConfirmation::Failure(message)) => {
-				let js_resp = JSResponse { ok: false, message };
+			Ok(SignupConfirmation::Error(e)) => {
+				let js_resp = AuthResponse::new(false, e.as_str().to_string());
 
-				Ok(serde_wasm_bindgen::to_value(&js_resp)?)
+				Ok(js_resp)
 			}
 			Err(_) => Err(JsError::new("Bad server response")),
 		},
@@ -128,7 +133,7 @@ pub async fn send_signup(username: &str, password: &str, display_name: &str) -> 
 }
 
 #[wasm_bindgen(js_name = sendValidate)]
-pub async fn send_validate() -> Result<bool, JsError> {
+pub async fn verify_auth() -> Result<bool, JsError> {
 	let token = wasm_cookies::get("__Secure-Csrf-Token")
 		.expect_throw("Secure token missing!!")
 		.expect_throw("Token encoding error");
@@ -139,7 +144,7 @@ pub async fn send_validate() -> Result<bool, JsError> {
 	};
 
 	let req = reqwest::Client::new()
-		.post("https://ppm.cloudgazing.dev/auth/validate")
+		.post(VERIFY_URL)
 		.header(CONTENT_TYPE, "application/text")
 		.header(ACCEPT, "application/json")
 		.header(AUTHORIZATION, "Bearer {token}")
@@ -157,12 +162,12 @@ pub async fn send_validate() -> Result<bool, JsError> {
 	};
 
 	match resp.text().await {
-		Ok(text) => match serde_json::from_str::<BasicResponse<bool>>(&text) {
+		Ok(text) => match serde_json::from_str::<VerifyResponse>(&text) {
 			Ok(data) => match data {
-				BasicResponse::Ok(resp) => Ok(resp),
-				BasicResponse::Err => Err(JsError::new("Invalid sent data")),
+				VerifyResponse::Ok => Ok(true),
+				VerifyResponse::Err(e) => Err(JsError::new(e.as_str())),
 			},
-			Err(_) => Err(JsError::new("Bad server response")),
+			Err(_) => Err(JsError::new("Bad client request")),
 		},
 		Err(_) => Err(JsError::new("Bad server response")),
 	}

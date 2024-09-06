@@ -1,63 +1,65 @@
-import { Card, Chip, IconButton, List, ListItem, ListItemSuffix, Typography } from '@material-tailwind/react';
-import { IconLayoutSidebar, IconMessagePlus } from '@tabler/icons-react';
+import { Package2 } from 'lucide-react';
 
-import { useAppStateContext } from '~/context/appState.loader.ts';
+import { Badge } from '~/components/ui/badge.tsx';
+import { Button } from '~/components/ui/button.tsx';
+import { cn } from '~/lib/utils.ts';
+import { useAppStateContext } from '~/context/appState.loader';
 
-function SidebarButton({
+function PersonButton({
 	userId,
 	displayName,
-	newMessages
+	unreadCount,
 }: {
 	userId: string;
 	displayName: string;
-	newMessages: number;
+	unreadCount: number;
 }) {
-	const { user } = useAppStateContext();
+	const { wasmState, openUserInfo } = useAppStateContext();
 
 	function changeConv() {
-		user.setValue({ userId, displayName, newMessages: 0, status: 'online' });
+		wasmState.changeConversation(userId);
 	}
 
 	return (
-		<ListItem selected={user.value.userId === userId} onClick={changeConv} className="bg-transparent text-white">
+		<Button
+			variant={openUserInfo?.userId === userId ? 'default' : 'ghost'}
+			className="flex items-center justify-between text-base"
+			onClick={changeConv}
+		>
 			{displayName}
-			{newMessages && (
-				<ListItemSuffix>
-					<Chip value={newMessages} size="sm" variant="ghost" color="light-blue" className="rounded-full" />
-				</ListItemSuffix>
-			)}
-		</ListItem>
+			<Badge
+				variant="secondary"
+				className={cn('h-5 w-5 items-center justify-center rounded-full', unreadCount <= 0 && 'invisible')}
+			>
+				{unreadCount}
+			</Badge>
+		</Button>
 	);
 }
 
 export function Sidebar() {
-	const { sidebar } = useAppStateContext();
+	const { generalState } = useAppStateContext();
 
 	return (
-		<div className="w-64 bg-side-bar">
-			<Card color="transparent" shadow={false} className="w-full max-w-[20rem] p-4 text-white">
-				<div className="flex justify-between">
-					<IconButton color="white" variant="text">
-						<IconLayoutSidebar />
-					</IconButton>
-					<IconButton color="white" variant="text" className="ml-auto">
-						<IconMessagePlus />
-					</IconButton>
+		<div className="hidden border-r bg-muted/40 md:block">
+			<div className="flex h-full max-h-screen flex-col gap-2">
+				<div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
+					<span className="flex items-center gap-2 font-semibold">
+						<Package2 className="h-6 w-6" />
+						<span className="">LOGO</span>
+					</span>
 				</div>
-				<div className="px-2 py-4">
-					<Typography variant="h5">Conversations</Typography>
-				</div>
-				<List className="px-0 pr-4">
-					{sidebar.value.map(button => (
-						<SidebarButton
-							key={button.userId}
-							userId={button.userId}
-							displayName={button.displayName}
-							newMessages={button.newMessages}
+				<nav className="flex flex-1 flex-col gap-1.5">
+					{generalState.map(data => (
+						<PersonButton
+							key={data.userId}
+							userId={data.userId}
+							displayName={data.displayName}
+							unreadCount={data.unreadCount}
 						/>
 					))}
-				</List>
-			</Card>
+				</nav>
+			</div>
 		</div>
 	);
 }
