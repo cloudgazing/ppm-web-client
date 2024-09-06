@@ -5,6 +5,9 @@
 			"label": "WASM build (dev)",
 			"type": "shell",
 			"command": "wasm-pack",
+			"options": {
+				"cwd": "${workspaceFolder}/wasm"
+			},
 			"args": [
 				"build",
 				"--dev",
@@ -22,6 +25,9 @@
 			"label": "WASM build (release)",
 			"type": "shell",
 			"command": "wasm-pack",
+			"options": {
+				"cwd": "${workspaceFolder}/wasm"
+			},
 			"args": [
 				"build",
 				"--release",
@@ -36,6 +42,9 @@
 			"label": "WASM build (release, minified)",
 			"type": "shell",
 			"command": "wasm-pack",
+			"options": {
+				"cwd": "${workspaceFolder}/wasm"
+			},
 			"args": [
 				"build",
 				"--release",

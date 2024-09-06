@@ -1,4 +1,4 @@
-import type { ConversationMessage, OpenUserInfo, SidebarPerson, WasmState } from 'ppm-wasm';
+import type { ConversationMessage, OpenUserInfo, SidebarPerson, WasmState } from 'wasm-module';
 
 export interface AppState {
 	generalState: SidebarPerson[];

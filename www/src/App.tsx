@@ -4,7 +4,7 @@ import { RouterProvider, createBrowserRouter, redirect } from 'react-router-dom'
 import { ThemeProvider } from '~/providers/theme-provider.tsx';
 
 async function loader(setLoaded: React.Dispatch<React.SetStateAction<boolean>>) {
-	const { default: init, getCsrf, sendValidate } = await import('ppm-wasm');
+	const { default: init, getCsrf, sendValidate } = await import('wasm-module');
 
 	await init();
 

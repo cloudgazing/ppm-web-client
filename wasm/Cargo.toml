@@ -1,5 +1,5 @@
 [package]
-name = "web"
+name = "wasm-ppm"
 description = "WASM module for the ppm web client"
 repository = "https://github.com/cloudgazing/ppm-web-client"
 version = "0.3.0"
@@ -11,7 +11,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 js-sys = "0.3.70"
-ppm-models = { path = "./models" }
+ppm-models = { git = "https://github.com/cloudgazing/ppm-models.git", version = "0.3.0" }
 reqwest = "0.12.7"
 serde = { version = "1.0.210", features = ["derive"] }
 serde-wasm-bindgen = "0.6.5"

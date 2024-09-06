@@ -790,6 +790,7 @@ checksum = "d231b230927b5e4ad203db57bbcbee2802f6bce620b1e4a9024a07d94e2907ec"
 [[package]]
 name = "ppm-models"
 version = "0.3.0"
+source = "git+https://github.com/cloudgazing/ppm-models.git#150f1a6c1ccc7d568c60b1472998c3ce97383c03"
 dependencies = [
  "ed25519-dalek",
  "serde",
@@ -1500,7 +1501,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "web"
+name = "wasm-ppm"
 version = "0.3.0"
 dependencies = [
  "js-sys",

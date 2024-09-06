@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
-import type { ConversationMessage, OpenUserInfo, SidebarPerson } from 'ppm-wasm';
+import type { ConversationMessage, OpenUserInfo, SidebarPerson } from 'wasm-module';
 
 import { useMemo, useState } from 'react';
-import { WasmState } from 'ppm-wasm';
+import { WasmState } from 'wasm-module';
 
 import { ContextProvider } from '~/context/appState.loader.ts';
 

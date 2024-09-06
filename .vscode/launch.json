@@ -5,9 +5,9 @@
 			"type": "lldb",
 			"request": "launch",
 			"name": "Debug",
-			"program": "${workspaceFolder}/target/debug/${workspaceRootFolderName}",
+			"program": "${workspaceFolder}/wasm/target/debug/${workspaceRootFolderName}",
 			"args": [],
-			"cwd": "${workspaceFolder}/target/debug",
+			"cwd": "${workspaceFolder}/wasm/target/debug",
 			"sourceLanguages": ["rust"]
 		}
 	]

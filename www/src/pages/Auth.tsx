@@ -16,7 +16,7 @@ function LoginTab() {
 
 		if (username && password) {
 			void (async () => {
-				const { sendAuthLogin } = await import('ppm-wasm');
+				const { sendAuthLogin } = await import('wasm-module');
 				try {
 					const resp = await sendAuthLogin(username, password);
 					if (resp.ok) {
@@ -71,7 +71,7 @@ function SignUpTab() {
 
 		if (username && password && passwordVerify && displayName) {
 			void (async () => {
-				const { sendAuthSignup } = await import('ppm-wasm');
+				const { sendAuthSignup } = await import('wasm-module');
 				try {
 					const resp = await sendAuthSignup(username, password, displayName);
 					if (resp.ok) {
