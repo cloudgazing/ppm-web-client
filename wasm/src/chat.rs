@@ -14,14 +14,15 @@ use wasm_bindgen::JsCast;
 use wasm_bindgen::UnwrapThrowExt;
 use web_sys::{MessageEvent, WebSocket};
 
-const WS_URL: &str = "wss://gateway.cloudgazing.dev/ws";
+const WS_URL: &str = env!("WS_URL");
+const AUTH_TOKEN_NAME: &str = env!("AUTH_TOKEN_NAME");
 
 pub fn create_web_socket(
 	people: Rc<RefCell<HashMap<String, Person>>>,
 	open: Rc<RefCell<*mut Person>>,
 	state_fn: Rc<state::StateFunctions>,
 ) -> WebSocket {
-	let token = wasm_cookies::get("AT")
+	let token = wasm_cookies::get(AUTH_TOKEN_NAME)
 		.expect_throw("Secure token missing!!")
 		.expect_throw("Token encoding error");
 

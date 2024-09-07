@@ -8,10 +8,11 @@ use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::{JsError, UnwrapThrowExt};
 use wasm_cookies::CookieOptions;
 
-const CMW_URL: &str = "https://gateway.cloudgazing.dev/cmw";
-const LOGIN_URL: &str = "https://gateway.cloudgazing.dev/auth/login";
-const SIGNUP_URL: &str = "https://gateway.cloudgazing.dev/auth/signup";
-const VERIFY_URL: &str = "https://gateway.cloudgazing.dev/auth/verify";
+const CMW_URL: &str = env!("CMW_URL");
+const LOGIN_URL: &str = env!("LOGIN_URL");
+const SIGNUP_URL: &str = env!("SIGNUP_URL");
+const VERIFY_URL: &str = env!("VERIFY_URL");
+const CSRF_TOKEN_NAME: &str = env!("CSRF_TOKEN_NAME");
 
 #[derive(serde::Deserialize, serde::Serialize, Tsify)]
 #[tsify(into_wasm_abi)]
@@ -38,7 +39,7 @@ pub async fn get_csrf_middleware() -> Result<(), JsError> {
 
 #[wasm_bindgen(js_name = sendAuthLogin)]
 pub async fn send_auth_login(username: &str, password: &str) -> Result<AuthResponse, JsError> {
-	let token = wasm_cookies::get("__Secure-Csrf-Token")
+	let token = wasm_cookies::get(CSRF_TOKEN_NAME)
 		.expect_throw("Secure token missing!!")
 		.expect_throw("Token encoding error");
 
@@ -86,7 +87,7 @@ pub async fn send_auth_login(username: &str, password: &str) -> Result<AuthRespo
 
 #[wasm_bindgen(js_name = sendAuthSignup)]
 pub async fn send_auth_signup(username: &str, password: &str, display_name: &str) -> Result<AuthResponse, JsError> {
-	let token = wasm_cookies::get("__Secure-Csrf-Token")
+	let token = wasm_cookies::get(CSRF_TOKEN_NAME)
 		.expect_throw("Secure token missing!!")
 		.expect_throw("Token encoding error");
 
@@ -134,7 +135,7 @@ pub async fn send_auth_signup(username: &str, password: &str, display_name: &str
 
 #[wasm_bindgen(js_name = sendValidate)]
 pub async fn verify_auth() -> Result<bool, JsError> {
-	let token = wasm_cookies::get("__Secure-Csrf-Token")
+	let token = wasm_cookies::get(CSRF_TOKEN_NAME)
 		.expect_throw("Secure token missing!!")
 		.expect_throw("Token encoding error");
 

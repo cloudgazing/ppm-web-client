@@ -1,2 +1,11 @@
 [build]
 target = "wasm32-unknown-unknown"
+
+[env]
+CMW_URL = ""
+LOGIN_URL = ""
+SIGNUP_URL = ""
+VERIFY_URL = ""
+WS_URL = ""
+AUTH_TOKEN_NAME = "AT"
+CSRF_TOKEN_NAME = "__Secure-Csrf-Token"
