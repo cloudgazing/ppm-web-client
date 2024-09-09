@@ -5,14 +5,14 @@ use ppm_models::server::auth::{LoginConfirmation, SignupConfirmation, VerifyResp
 use reqwest::header::{HeaderName, ACCEPT, AUTHORIZATION, CONTENT_TYPE};
 use tsify_next::Tsify;
 use wasm_bindgen::prelude::wasm_bindgen;
-use wasm_bindgen::{JsError, UnwrapThrowExt};
+use wasm_bindgen::JsError;
 use wasm_cookies::CookieOptions;
 
-const CMW_URL: &str = env!("CMW_URL");
 const LOGIN_URL: &str = env!("LOGIN_URL");
 const SIGNUP_URL: &str = env!("SIGNUP_URL");
 const VERIFY_URL: &str = env!("VERIFY_URL");
 const CSRF_TOKEN_NAME: &str = env!("CSRF_TOKEN_NAME");
+const COOKIE_DOMAIN: &str = env!("COOKIE_DOMAIN");
 
 #[derive(serde::Deserialize, serde::Serialize, Tsify)]
 #[tsify(into_wasm_abi)]
@@ -27,21 +27,11 @@ impl AuthResponse {
 	}
 }
 
-#[wasm_bindgen(js_name = getCsrf)]
-pub async fn get_csrf_middleware() -> Result<(), JsError> {
-	let req = reqwest::Client::new().get(CMW_URL).fetch_credentials_include();
-
-	match req.send().await {
-		Ok(_) => Ok(()),
-		Err(e) => Err(JsError::new(e.status().expect_throw("Server request failed").as_str())),
-	}
-}
-
 #[wasm_bindgen(js_name = sendAuthLogin)]
 pub async fn send_auth_login(username: &str, password: &str) -> Result<AuthResponse, JsError> {
-	let token = wasm_cookies::get(CSRF_TOKEN_NAME)
-		.expect_throw("Secure token missing!!")
-		.expect_throw("Token encoding error");
+	let Some(token) = wasm_cookies::get(CSRF_TOKEN_NAME).transpose()? else {
+		return Err(JsError::new("Secure token missing."));
+	};
 
 	let login_data = LoginData::new(username, password);
 
@@ -54,42 +44,31 @@ pub async fn send_auth_login(username: &str, password: &str) -> Result<AuthRespo
 		.body(serde_json::to_string(&login_data)?)
 		.fetch_credentials_include();
 
-	let resp = match req.send().await {
-		Ok(r) => r,
-		Err(e) => return Err(JsError::new(e.status().expect_throw("Server request failed").as_str())),
-	};
+	let resp = req.send().await?;
+	let text = resp.text().await?;
+	let login_confirmation: LoginConfirmation = serde_json::from_str(&text)?;
 
-	match resp.text().await {
-		Ok(text) => match serde_json::from_str::<LoginConfirmation>(&text) {
-			Ok(LoginConfirmation::Success(token)) => {
-				let options = CookieOptions::default()
-					.with_domain(".cloudgazing.dev")
-					.expires_after(Duration::from_secs(86400)) // 10 days
-					.secure()
-					.with_same_site(wasm_cookies::SameSite::None);
+	match login_confirmation {
+		LoginConfirmation::Success(token) => {
+			let options = CookieOptions::default()
+				.with_domain(COOKIE_DOMAIN)
+				.expires_after(Duration::from_secs(86400)) // 10 days
+				.secure()
+				.with_same_site(wasm_cookies::SameSite::None);
 
-				wasm_cookies::set("AT", token, &options);
+			wasm_cookies::set("AT", token, &options);
 
-				let js_resp = AuthResponse::new(true, "Login successful".to_string());
-
-				Ok(js_resp)
-			}
-			Ok(LoginConfirmation::Error(e)) => {
-				let js_resp = AuthResponse::new(false, e.as_str().to_string());
-
-				Ok(js_resp)
-			}
-			Err(_) => Err(JsError::new("Bad server response")),
-		},
-		Err(_) => Err(JsError::new("Bad server response")),
+			Ok(AuthResponse::new(true, "Login successful".to_string()))
+		}
+		LoginConfirmation::Error(e) => Ok(AuthResponse::new(false, e.as_str().to_string())),
 	}
 }
 
 #[wasm_bindgen(js_name = sendAuthSignup)]
 pub async fn send_auth_signup(username: &str, password: &str, display_name: &str) -> Result<AuthResponse, JsError> {
-	let token = wasm_cookies::get(CSRF_TOKEN_NAME)
-		.expect_throw("Secure token missing!!")
-		.expect_throw("Token encoding error");
+	let Some(token) = wasm_cookies::get(CSRF_TOKEN_NAME).transpose()? else {
+		return Err(JsError::new("Secure token missing."));
+	};
 
 	let signup_data = SignupData::new(username, password, display_name);
 
@@ -102,46 +81,34 @@ pub async fn send_auth_signup(username: &str, password: &str, display_name: &str
 		.body(serde_json::to_string(&signup_data)?)
 		.fetch_credentials_include();
 
-	let resp = match req.send().await {
-		Ok(r) => r,
-		Err(e) => return Err(JsError::new(e.status().expect_throw("Server request failed").as_str())),
-	};
+	let resp = req.send().await?;
+	let text = resp.text().await?;
+	let signup_confirmation: SignupConfirmation = serde_json::from_str(&text)?;
 
-	match resp.text().await {
-		Ok(text) => match serde_json::from_str::<SignupConfirmation>(&text) {
-			Ok(SignupConfirmation::Success(token)) => {
-				let options = CookieOptions::default()
-					.with_domain(".cloudgazing.dev")
-					.expires_after(Duration::from_secs(86400)) // 10 days
-					.secure()
-					.with_same_site(wasm_cookies::SameSite::None);
+	match signup_confirmation {
+		SignupConfirmation::Success(token) => {
+			let options = CookieOptions::default()
+				.with_domain(COOKIE_DOMAIN)
+				.expires_after(Duration::from_secs(86400)) // 10 days
+				.secure()
+				.with_same_site(wasm_cookies::SameSite::None);
 
-				wasm_cookies::set("AT", token, &options);
+			wasm_cookies::set("AT", token, &options);
 
-				let js_resp = AuthResponse::new(true, "Signup successful".to_string());
-
-				Ok(js_resp)
-			}
-			Ok(SignupConfirmation::Error(e)) => {
-				let js_resp = AuthResponse::new(false, e.as_str().to_string());
-
-				Ok(js_resp)
-			}
-			Err(_) => Err(JsError::new("Bad server response")),
-		},
-		Err(_) => Err(JsError::new("Bad server response")),
+			Ok(AuthResponse::new(true, "Signup successful".to_string()))
+		}
+		SignupConfirmation::Error(e) => Ok(AuthResponse::new(false, e.as_str().to_string())),
 	}
 }
 
-#[wasm_bindgen(js_name = sendValidate)]
-pub async fn verify_auth() -> Result<bool, JsError> {
-	let token = wasm_cookies::get(CSRF_TOKEN_NAME)
-		.expect_throw("Secure token missing!!")
-		.expect_throw("Token encoding error");
+#[wasm_bindgen(js_name = sendVerification)]
+pub async fn verify_auth() -> Result<(), JsError> {
+	let Some(token) = wasm_cookies::get(CSRF_TOKEN_NAME).transpose()? else {
+		return Err(JsError::new("secure token missing."));
+	};
 
-	let jwt = match wasm_cookies::get("AT") {
-		Some(Ok(jwt)) => jwt,
-		_ => return Ok(false),
+	let Some(jwt) = wasm_cookies::get("AT").transpose()? else {
+		return Err(JsError::new("auth token missing."));
 	};
 
 	let req = reqwest::Client::new()
@@ -153,23 +120,12 @@ pub async fn verify_auth() -> Result<bool, JsError> {
 		.body(jwt)
 		.fetch_credentials_include();
 
-	let resp = match req.send().await {
-		Ok(resp) => resp,
-		Err(e) => {
-			return Err(JsError::new(
-				e.status().expect_throw("JWT check request failed").as_str(),
-			))
-		}
-	};
+	let resp = req.send().await?;
+	let text = resp.text().await?;
+	let verify_response: VerifyResponse = serde_json::from_str(&text)?;
 
-	match resp.text().await {
-		Ok(text) => match serde_json::from_str::<VerifyResponse>(&text) {
-			Ok(data) => match data {
-				VerifyResponse::Ok => Ok(true),
-				VerifyResponse::Err(e) => Err(JsError::new(e.as_str())),
-			},
-			Err(_) => Err(JsError::new("Bad client request")),
-		},
-		Err(_) => Err(JsError::new("Bad server response")),
+	match verify_response {
+		VerifyResponse::Ok => Ok(()),
+		VerifyResponse::Err(e) => Err(JsError::new(e.as_str())),
 	}
 }
