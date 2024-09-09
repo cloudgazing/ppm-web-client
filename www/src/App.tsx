@@ -1,29 +1,24 @@
-import { Dispatch, SetStateAction, useState } from 'react';
 import { RouterProvider, createBrowserRouter, redirect } from 'react-router-dom';
 
 import { ThemeProvider } from '~/providers/theme-provider.tsx';
 
-async function loader(setLoaded: React.Dispatch<React.SetStateAction<boolean>>) {
-	const { default: init, getCsrf, sendValidate } = await import('wasm-module');
-
-	await init();
+async function loader() {
+	const { default: init, sendVerification } = await import('wasm-module');
 
 	try {
-		await getCsrf();
+		await init();
 
-		const valid = await sendValidate();
+		await sendVerification();
 
-		if (valid) setLoaded(true);
-
-		return valid;
+		return true;
 	} catch (e) {
 		console.error(e instanceof Error ? e.message : e);
 
-		return null;
+		return false;
 	}
 }
 
-function router(_loaded: boolean, setLoaded: Dispatch<SetStateAction<boolean>>) {
+function router() {
 	return createBrowserRouter([
 		{
 			path: '/',
@@ -34,9 +29,9 @@ function router(_loaded: boolean, setLoaded: Dispatch<SetStateAction<boolean>>) 
 					Component: Chat,
 					errorElement: <div>chat server down</div>,
 					loader: async () => {
-						const authenticated = await loader(setLoaded);
+						const verified = await loader();
 
-						if (authenticated === false) {
+						if (!verified) {
 							return redirect('/auth');
 						}
 
@@ -54,9 +49,9 @@ function router(_loaded: boolean, setLoaded: Dispatch<SetStateAction<boolean>>) 
 					Component: Auth,
 					errorElement: <div>auth server down</div>,
 					loader: async () => {
-						const authenticated = await loader(setLoaded);
+						const verified = await loader();
 
-						if (authenticated === true) {
+						if (verified) {
 							return redirect('/');
 						}
 
@@ -77,11 +72,9 @@ function router(_loaded: boolean, setLoaded: Dispatch<SetStateAction<boolean>>) 
 }
 
 export function App() {
-	const [loaded, setLoaded] = useState(false);
-
 	return (
 		<ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-			<RouterProvider router={router(loaded, setLoaded)} />
+			<RouterProvider router={router()} />
 		</ThemeProvider>
 	);
 }
